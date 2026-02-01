@@ -96,11 +96,19 @@ func (r *RethClient) Run(ctx context.Context, cfg *types.RuntimeConfig) error {
 	args = append(args, "--port", fmt.Sprintf("%d", r.p2pPort))
 	args = append(args, "-vv")
 
-	// increase mempool size
-	args = append(args, "--txpool.pending-max-count", "100000000")
-	args = append(args, "--txpool.queued-max-count", "100000000")
-	args = append(args, "--txpool.pending-max-size", "100")
-	args = append(args, "--txpool.queued-max-size", "100")
+	// Engine configuration matching production
+	args = append(args, "--engine.legacy-state-root")
+	args = append(args, "--engine.disable-prewarming")
+
+	// Increase txpool size limits for benchmarking
+	args = append(args, "--txpool.max-account-slots", "0")
+	args = append(args, "--txpool.max-new-pending-txs-notifications", "10000")
+	args = append(args, "--txpool.pending-max-count", "10000000")
+	args = append(args, "--txpool.pending-max-size", "1024")
+	args = append(args, "--txpool.basefee-max-count", "10000000")
+	args = append(args, "--txpool.basefee-max-size", "1024")
+	args = append(args, "--txpool.queued-max-count", "10000000")
+	args = append(args, "--txpool.queued-max-size", "1024")
 
 	args = append(args, "--db.read-transaction-timeout", "0")
 	args = append(args, cfg.Args...)

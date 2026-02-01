@@ -1,0 +1,96 @@
+name: Conduit state root strategy comparison
+description: Compare deferred vs every-flashblock state root strategies
+
+payloads:
+  - name: Transfer Only
+    type: transfer-only
+    id: transfer-only
+
+benchmarks:
+  # every-flashblock @ 250ms (default interval, ~4 flashblocks/block)
+  - tags:
+      strategy: every-flashblock
+      fb_interval: 250ms
+    variables:
+      - type: payload
+        values:
+          - transfer-only
+      - type: node_type
+        values:
+          - rbuilder
+      - type: validator_node_type
+        values:
+          - reth
+      - type: num_blocks
+        value: 10
+      - type: gas_limit
+        values:
+          - 5000000000
+      - type: node_args
+        value: "--conduit.enabled --conduit.state_root_strategy every-flashblock --flashblocks.block-time 250"
+
+  # deferred @ 250ms
+  - tags:
+      strategy: deferred
+      fb_interval: 250ms
+    variables:
+      - type: payload
+        values:
+          - transfer-only
+      - type: node_type
+        values:
+          - rbuilder
+      - type: validator_node_type
+        values:
+          - reth
+      - type: num_blocks
+        value: 10
+      - type: gas_limit
+        values:
+          - 5000000000
+      - type: node_args
+        value: "--conduit.enabled --conduit.state_root_strategy deferred --flashblocks.block-time 250"
+
+  # every-flashblock @ 10ms (~100 flashblocks/block)
+  - tags:
+      strategy: every-flashblock
+      fb_interval: 10ms
+    variables:
+      - type: payload
+        values:
+          - transfer-only
+      - type: node_type
+        values:
+          - rbuilder
+      - type: validator_node_type
+        values:
+          - reth
+      - type: num_blocks
+        value: 10
+      - type: gas_limit
+        values:
+          - 5000000000
+      - type: node_args
+        value: "--conduit.enabled --conduit.state_root_strategy every-flashblock --flashblocks.block-time 10"
+
+  # deferred @ 10ms
+  - tags:
+      strategy: deferred
+      fb_interval: 10ms
+    variables:
+      - type: payload
+        values:
+          - transfer-only
+      - type: node_type
+        values:
+          - rbuilder
+      - type: validator_node_type
+        values:
+          - reth
+      - type: num_blocks
+        value: 10
+      - type: gas_limit
+        values:
+          - 5000000000
+      - type: node_args
+        value: "--conduit.enabled --conduit.state_root_strategy deferred --flashblocks.block-time 10"
