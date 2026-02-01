@@ -116,21 +116,29 @@ cd ~/Code/benchmark
 ./bin/base-bench run \
   --config configs/conduit-stateroot-comparison.yml \
   --root-dir /tmp/bench-data \
-  --output-dir /tmp/bench-output \
+  --output-dir ./output \
   --rbuilder-bin ~/Code/conduit-op-rbuilder/target/release/op-rbuilder \
   --reth-bin ~/Code/conduit-op-rbuilder/target/release/op-rbuilder
 ```
 
+> **Note on `--output-dir`:** Use `./output` (relative to the repo root) so the report viewer can find the results. The viewer's Vite build copies from `../output/**/*`. If you previously ran with a different path (e.g., `/tmp/bench-output`), you can symlink it: `ln -s /tmp/bench-output ./output`
+
 > **Note on `--reth-bin`:** We point this at the op-rbuilder binary (not `./bin/op-reth`) because the benchmark passes `node_args` (including `--conduit.*` flags) to both the sequencer and validator nodes. Plain `op-reth` doesn't understand conduit flags and will crash. Using the op-rbuilder binary for both roles avoids this.
 
-The benchmark takes roughly 5-10 minutes for all 4 runs. The 10ms-interval tests are slower because each block produces ~100 flashblocks.
+### Reruns
+
+Each benchmark run gets an auto-generated `BenchmarkRunID`. When writing results, the tool reads the existing `metadata.json`, **replaces** any runs sharing the same `BenchmarkRunID`, and preserves everything else. This means:
+
+- **Reruns accumulate** in `metadata.json` -- each invocation generates a new ID, so previous results are kept alongside new ones.
+- **To get a clean slate**, delete `./output/metadata.json` (or the entire `./output` directory) before running.
+- **To replace a specific run**, pass `--benchmark-run-id <id>` matching an existing run's ID. Only those entries are overwritten.
 
 ## Step 4: Interpret Results
 
 ### Quick summary
 
 ```bash
-cat /tmp/bench-output/metadata.json | python3 -m json.tool
+cat ./output/metadata.json | python3 -m json.tool
 ```
 
 Each run appears as an entry with its tags (`strategy`, `fb_interval`) and summary metrics. The primary metric is `sequencerMetrics.gasPerSecond`.
@@ -148,7 +156,7 @@ Each run appears as an entry with its tags (`strategy`, `fb_interval`) and summa
 ### Per-block detail
 
 ```bash
-cat /tmp/bench-output/test-*/metrics-sequencer.json | python3 -m json.tool
+cat ./output/test-*/metrics-sequencer.json | python3 -m json.tool
 ```
 
 ### Interactive dashboard
@@ -156,7 +164,7 @@ cat /tmp/bench-output/test-*/metrics-sequencer.json | python3 -m json.tool
 ```bash
 cd ~/Code/benchmark/report
 npm install && npm run dev
-# Open http://localhost:5173
+# Open http://localhost:3000
 ```
 
 ### Expected behavior
@@ -168,8 +176,8 @@ npm install && npm run dev
 ## Output Structure
 
 ```
-/tmp/bench-output/
-  metadata.json                          # Summary of all runs
+./output/
+  metadata.json                          # Summary of all runs (accumulates across reruns)
   test-<id>-0/
     metrics-sequencer.json               # Prometheus metrics from sequencer
     metrics-validator.json               # Prometheus metrics from validator
