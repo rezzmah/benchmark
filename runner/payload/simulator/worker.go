@@ -618,7 +618,12 @@ func (t *simulatorPayloadWorker) createDeployTx(fromPriv *ecdsa.PrivateKey) (*co
 		return nil, nil, errors.Wrap(err, "failed to create transactor")
 	}
 	transactor.NoSend = true
-	transactor.GasLimit = t.params.GasLimit / 2
+	const maxDeployGas uint64 = 100_000_000
+	deployGas := t.params.GasLimit / 2
+	if deployGas > maxDeployGas {
+		deployGas = maxDeployGas
+	}
+	transactor.GasLimit = deployGas
 	transactor.Value = new(big.Int).Div(t.prefundAmount, big.NewInt(2))
 
 	rand64 := rand.Uint64()

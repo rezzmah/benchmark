@@ -206,7 +206,7 @@ func (nb *sequencerBenchmark) Run(ctx context.Context, metricsCollector metrics.
 		consensusClient := consensus.NewSequencerConsensusClient(nb.log, sequencerClient.Client(), sequencerClient.AuthClient(), mempool, consensus.ConsensusClientOptions{
 			BlockTime:         params.BlockTime,
 			GasLimit:          params.GasLimit,
-			GasLimitSetup:     1e9, // 1G gas
+			GasLimitSetup:     max(1e9, params.GasLimit),
 			ParallelTxBatches: nb.config.Config.ParallelTxBatches(),
 		}, headBlockHash, headBlockNumber, l1Chain, nb.config.BatcherAddr())
 
